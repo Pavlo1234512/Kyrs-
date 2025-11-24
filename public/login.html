@@ -1,70 +1,152 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <title>Авторизація</title>
-    <style>
-        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f4f4f4; }
-        .login-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); width: 300px; }
-        h2 { text-align: center; color: #333; }
-        input[type="email"], input[type="password"] { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 10px; }
-        button:hover { background-color: #0056b3; }
-        p { text-align: center; margin-top: 15px; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Авторизація — Система обліку наказів</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    body {
+      background: linear-gradient(to bottom, #f0f4f0 0%, #d0e0d0 100%);
+      font-family: 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      background: #2d6a4f;
+      color: white;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .footer {
+      background: #2d6a4f;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      margin-top: auto;
+      font-size: 0.9rem;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 420px;
+    }
+    .input-wrapper {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+    .input-wrapper i {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #4b5563;
+      font-size: 1.3rem;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .input-wrapper input {
+      width: 100%;
+      padding: 16px 16px 16px 58px;
+      border: 2px solid #d1d5db;
+      border-radius: 12px;
+      font-size: 1.05rem;
+      background: #f9fafb;
+      transition: all 0.3s;
+    }
+    .input-wrapper input:focus {
+      outline: none;
+      border-color: #16a34a;
+      box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.15);
+    }
+    button {
+      width: 100%;
+      padding: 16px;
+      background: #1e40af;
+      color: white;
+      font-weight: 600;
+      font-size: 1.15rem;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover { background: #1d3a94; }
+  </style>
 </head>
 <body>
-    <div class="login-container">
-        <h2>Вхід у систему</h2>
+
+  <header class="header">
+    <h1 class="text-2xl font-bold">Система обліку наказів</h1>
+    <p class="text-sm opacity-90">Військовий інститут телекомунікацій та інформатизації</p>
+  </header>
+
+  <main class="flex-1 flex items-center justify-center p-6">
+    <div class="card">
+      <h2 class="text-2xl font-bold text-center mb-10 text-gray-800">Авторизація</h2>
+      
+      <form id="loginForm">
+        <div class="input-wrapper">
+          <i class="fas fa-user"></i>
+          <input type="text" id="login" placeholder="Логін (email)" required />
+        </div>
         
-        <form id="loginForm">
-            <input type="email" name="email" placeholder="Електронна пошта" required>
-            <input type="password" name="password" placeholder="Пароль" required>
-            
-            <button type="submit">Увійти</button>
-        </form>
+        <div class="input-wrapper">
+          <i class="fas fa-lock"></i>
+          <input type="password" id="password" placeholder="Пароль" required />
+        </div>
         
-        <p>Немає облікового запису? <a href="/register.html">Зареєструватися</a></p>
+        <button type="submit">Увійти в систему</button>
+      </form>
+
+      <p class="text-center mt-8 text-sm text-gray-600">
+        Немає акаунту? <a href="/register.html" class="text-blue-600 font-medium hover:underline">Зареєструватися</a>
+      </p>
     </div>
+  </main>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const form = document.getElementById('loginForm');
-            
-            if (form) {
-                form.addEventListener('submit', async (e) => {
-                    e.preventDefault(); 
-                    
-                    const email = form.querySelector('[name="email"]').value;
-                    const password = form.querySelector('[name="password"]').value;
+  <footer class="footer">
+    © 2025 ВІТІ ім. Героїв Крут. Всі права захищено.
+  </footer>
 
-                    try {
-                        const response = await fetch('/api/auth/login', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ email, password })
-                        });
+  <script>
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const login = document.getElementById('login').value.trim();
+    const password = document.getElementById('password').value;
 
-                        const data = await response.json();
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: login, password })
+      });
 
-                        if (response.ok) {
-                            // УСПІХ: Зберігаємо дані користувача
-                            localStorage.setItem('user', JSON.stringify(data.user)); 
-                            alert('Вхід успішний! Перенаправлення...');
-                            window.location.href = '/index.html';
-                        } else {
-                            // ПОМИЛКА АВТОРИЗАЦІЇ (401)
-                            alert(data.error || 'Невірна пошта або пароль.');
-                        }
-                    } catch (error) {
-                        alert('Помилка мережі або сервера. Перевірте підключення.');
-                        console.error('Login error:', error);
-                    }
-                });
-            } else {
-                console.error("Помилка: Елемент з ID 'loginForm' не знайдено!");
-            }
-        });
-    </script>
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Невірні дані');
+
+      const realName = data.user.name && data.user.name.trim() ? data.user.name : data.user.email.split('@')[0];
+
+      localStorage.setItem('currentUser', JSON.stringify({
+        id: data.user.id,
+        name: realName,
+        email: data.user.email
+      }));
+
+      alert('Вітаємо, ' + realName + '!');
+      location.href = '/index.html';
+
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+</script>
 </body>
 </html>

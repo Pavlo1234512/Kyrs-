@@ -1,174 +1,245 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Допомога — Система наказів</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-  <!-- Ті ж стилі, що й на інших сторінках -->
-  <link rel="stylesheet" href="/css/style.css" />
-  <link rel="stylesheet" href="/css/help.css" /> <!-- якщо є -->
+  <script src="/auth-helper.js"></script>
 
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      margin: 0;
-      padding: 0;
+      background: #f3f4f6;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 50%, #a5d6a7 100%);
       min-height: 100vh;
-      background-attachment: fixed;
+      display: flex;
+      flex-direction: column;
     }
-    .help-container {
-      max-width: 1100px;
-      margin: 30px auto;
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-      overflow: hidden;
-    }
-    .help-header {
-      background: linear-gradient(120deg, #2e7d32, #4caf50);
+    .header {
+      background: #2d6a4f;
       color: white;
-      padding: 35px 20px;
+      padding: 1rem 2rem;
       text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-    .help-header h1 {
-      margin: 0;
-      font-size: 2.6em;
-      font-weight: 400;
-      letter-spacing: 1px;
-    }
-    .help-header p {
-      margin: 10px 0 0;
-      opacity: 0.95;
-      font-size: 1.1em;
+    .header .title { font-size: 1.4rem; font-weight: 600; }
+    .header .subtitle { font-size: 0.95rem; opacity: 0.9; }
+
+    .main-container {
+      flex: 1;
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
     }
     .help-content {
-      padding: 40px;
+      background: white;
+      border-radius: 16px;
+      padding: 2.5rem;
+      max-width: 1000px;
+      width: 100%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
       line-height: 1.8;
-      color: #2e3d2e;
+      color: #1f2937;
     }
-    .section {
-      margin-bottom: 40px;
-      padding-bottom: 25px;
-      border-bottom: 1px dashed #c8e6c9;
+    .help-content h1 {
+      color: #2d6a4f;
+      font-size: 2.4rem;
+      text-align: center;
+      margin-bottom: 1rem;
     }
-    .section:last-child { border-bottom: none; }
-    .section h2 {
-      color: #2e7d32;
-      font-size: 1.6em;
-      margin: 0 0 15px 0;
+    .help-content h2 {
+      color: #2d6a4f;
+      font-size: 1.6rem;
+      margin: 2rem 0 1rem;
       padding-left: 10px;
-      border-left: 6px solid #81c784;
+      border-left: 6px solid #86efac;
     }
-    ul, ol {
-      padding-left: 25px;
+    .help-content ul, .help-content ol {
+      padding-left: 1.5rem;
+      margin: 1rem 0;
     }
-    li {
-      margin: 8px 0;
+    .help-content li {
+      margin: 0.6rem 0;
     }
-    code {
-      background: #e8f5e8;
-      padding: 3px 8px;
+    .help-content code {
+      background: #ecfdf5;
+      color: #166534;
+      padding: 0.2rem 0.5rem;
       border-radius: 4px;
-      color: #2e7d32;
-      font-weight: bold;
+      font-weight: 600;
     }
     .back-btn {
       display: inline-block;
-      margin: 30px 0;
-      padding: 14px 40px;
-      background: #2e7d32;
+      margin: 2rem auto;
+      padding: 1rem 2.5rem;
+      background: #16a34a;
       color: white;
       text-decoration: none;
       border-radius: 50px;
-      font-weight: bold;
-      font-size: 1.1em;
+      font-weight: 600;
+      font-size: 1.1rem;
       transition: all 0.3s;
-      box-shadow: 0 4px 15px rgba(46,125,50,0.3);
+      box-shadow: 0 4px 15px rgba(22,163,74,0.3);
     }
     .back-btn:hover {
-      background: #4caf50;
+      background: #15803d;
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(76,175,80,0.4);
     }
-    .text-center { text-align: center; }
+
+    /* БОКОВЕ МЕНЮ — ТОЙ САМИЙ, ЩО НА ВСІХ СТОРІНКАХ */
+    .sidebar {
+      height: 100%; width: 0; position: fixed; top: 0; left: 0;
+      background: #1f2937; padding-top: 70px; transition: 0.3s;
+      overflow-x: hidden; z-index: 1001;
+    }
+    .sidebar.open { width: 260px; }
+    .sidebar a, .sidebar button {
+      display: flex; align-items: center; padding: 0.75rem 1.5rem;
+      color: #e5e7eb; font-weight: 500; text-decoration: none;
+      margin: 0.25rem 1rem; border-radius: 8px; transition: background 0.3s;
+    }
+    .sidebar a i, .sidebar button i { margin-right: 0.75rem; width: 20px; text-align: center; }
+    .sidebar a:hover, .sidebar button:hover { background: #374151; }
+    .closebtn { position: absolute; top: 15px; right: 15px; background: #dc2626; color: white; width: 36px; height: 36px; border-radius: 8px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+    .openbtn { position: fixed; top: 15px; left: 15px; background: #16a34a; color: white; padding: 0.75rem 1rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; z-index: 1002; }
+    .openbtn:hover { background: #15803d; }
+    #logoutBtn { background: #dc2626; margin: 1rem; width: calc(100% - 2rem); }
+    #logoutBtn:hover { background: #b91c1c; }
+
+    .footer {
+      background: #2d6a4f;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.875rem;
+    }
   </style>
 </head>
 <body>
 
-  <div class="help-container">
-    <div class="help-header">
-      <h1>Допомога та інструкція</h1>
-      <p>Дізнайтесь, як швидко та зручно працювати з системою</p>
+  <header class="header">
+    <div class="title">Допомога та інструкція</div>
+    <div class="subtitle">Система обліку наказів та розпоряджень ВІТІ</div>
+  </header>
+
+  <button class="openbtn" id="openBtn" onclick="openNav()">Меню</button>
+
+  <div id="mySidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">X</a>
+    <div class="px-4 mb-6 text-center">
+      <p id="userName" class="text-white font-semibold">Користувач</p>
     </div>
+    <a href="/profile.html">Профіль</a>
+    <a href="/add-order.html">Додати наказ</a>
+    <a href="/settings.html">Налаштування</a>
+    <a href="/archive.html">Архів</a>
+    <a href="/messages.html">Повідомлення</a>
+    <a href="/help.html">Допомога</a>
+    <button id="logoutBtn" class="w-full text-left">Вийти</button>
+  </div>
 
+  <div class="main-container">
     <div class="help-content">
+      <h1>Як працювати з системою?</h1>
+      <p style="text-align:center; color:#4b5563; margin-bottom:2rem;">
+        Коротка інструкція для швидкого старту
+      </p>
 
-      <div class="section">
-        <h2>Додавання нового наказу</h2>
-        <ol>
-          <li>Натисніть кнопку <strong>«Додати наказ»</strong></li>
-          <li>Завантажте файл <code>.docx</code> — назва автоматично заповниться</li>
-          <li>Виберіть статус та за потреби термін виконання</li>
-          <li>Натисніть <strong>«Зберегти»</strong></li>
-        </ol>
+      <h2>Додавання нового наказу</h2>
+      <ol>
+        <li>Натисніть <strong>«Додати наказ»</strong> у меню</li>
+        <li>Завантажте файл <code>.docx</code> — назва заповниться автоматично</li>
+        <li>Виберіть статус та за потреби встановіть дедлайн</li>
+        <li>Натисніть <strong>«Зберегти наказ»</strong></li>
+      </ol>
+
+      <h2>Редагування та видалення</h2>
+      <ul>
+        <li>Клікніть на наказ у списку — відкриється картка</li>
+        <li><strong>Редагувати</strong> — змінити статус, дедлайн або замінити файл</li>
+        <li><strong>Видалити</strong> — з підтвердженням (файл теж видалиться)</li>
+      </ul>
+
+      <h2>Пошук та фільтри</h2>
+      <ul>
+        <li>Поле пошуку — шукає за назвою наказу</li>
+        <li>Фільтр за статусом — Активні / Виконані / Архів</li>
+        <li>Сортування та кількість на сторінці — налаштовується в <strong>Налаштуваннях</strong></li>
+      </ul>
+
+      <h2>Налаштування</h2>
+      <p>У розділі <strong>Налаштування</strong> можна змінити:</p>
+      <ul>
+        <li>Тему інтерфейсу (світла / темна)</li>
+        <li>Кількість наказів на сторінці</li>
+        <li>Сортування за замовчуванням</li>
+        <li>Автооновлення списку</li>
+      </ul>
+
+      <h2>Технічні вимоги</h2>
+      <ul>
+        <li>Підтримуються тільки файли <code>.docx</code></li>
+        <li>Максимальний розмір файлу — 10 МБ</li>
+        <li>Ваші дані захищені та зберігаються на сервері</li>
+      </ul>
+
+      <div style="text-align:center; margin-top: 3rem;">
+        <a href="/index.html" class="back-btn">Повернутися до списку наказів</a>
       </div>
-
-      <div class="section">
-        <h2>Редагування та видалення</h2>
-        <ul>
-          <li>Клікніть на наказ → відкриється детальна картка</li>
-          <li><strong>Редагувати</strong> — змінити статус, термін або замінити файл</li>
-          <li><strong>Видалити</strong> — з підтвердженням (файл теж видалиться)</li>
-        </ul>
-      </div>
-
-      <div class="section">
-        <h2>Пошук та фільтри</h2>
-        <ul>
-          <li>Поле пошуку — за назвою наказу</li>
-          <li>Фільтр за статусом — Активні / Виконані / Архів</li>
-          <li>Сортування — налаштовується в розділі <strong>Налаштування</strong></li>
-        </ul>
-      </div>
-
-      <div class="section">
-        <h2>Налаштування</h2>
-        <p>Тут можна змінити:</p>
-        <ul>
-          <li>Тему (світла/темна)</li>
-          <li>Кількість наказів на сторінці</li>
-          <li>Сортування за замовчуванням</li>
-          <li>Звук сповіщень та автопоновлення</li>
-        </ul>
-        <p><strong>Усе зберігається автоматично!</strong></p>
-      </div>
-
-      <div class="section">
-        <h2>Профіль</h2>
-        <p>Зміна імені, пошти та паролю</p>
-      </div>
-
-      <div class="section">
-        <h2>Технічні вимоги</h2>
-        <ul>
-          <li>Тільки файли <code>.docx</code></li>
-          <li>Максимальний розмір — 10 МБ</li>
-          <li>Ваші дані захищені</li>
-        </ul>
-      </div>
-
-      <div class="text-center">
-        <a href="/" class="back-btn">На головну</a>
-      </div>
-
     </div>
   </div>
 
-  <!-- Підключаємо твої скрипти (якщо є) -->
-  <script src="/js/main.js"></script>
-  <script src="/js/help.js"></script>
+  <footer class="footer">
+    © 2025 ВІТІ ім. Героїв Крут. Всі права захищено.
+  </footer>
 
+  <script>
+    // Якщо користувач авторизований — показуємо ім'я і активуємо вихід
+    if (window.user) {
+      document.getElementById('userName').textContent = window.user.name || 'Користувач';
+    }
+
+    document.getElementById('logoutBtn')?.addEventListener('click', () => {
+      localStorage.removeItem('user');
+      location.href = '/login.html';
+    });
+
+    function openNav() {
+      document.getElementById("mySidebar").classList.add('open');
+      document.getElementById("mainContainer")?.style = "margin-left:260px";
+      document.getElementById("openBtn").style.display = "none";
+    }
+    function closeNav() {
+      document.getElementById("mySidebar").classList.remove('open');
+      document.getElementById("mainContainer")?.style = "margin-left:0";
+      document.getElementById("openBtn").style.display = "block";
+    }
+  </script>
+  <!-- Sidebar скрипти — обов'язково! -->
+<script>
+  function openNav() {
+    document.getElementById("mySidebar").style.width = "320px";
+    document.getElementById("main").style.marginLeft = "320px";
+  }
+
+  function closeNav() {
+    document.getElementById("mySidebar").style.width = "0";
+    document.getElementById("main").style.marginLeft = "0";
+  }
+
+  // Закриваємо бокове меню при кліку поза ним
+  document.addEventListener('click', function(e) {
+    const sidebar = document.getElementById("mySidebar");
+    const openBtn = document.querySelector(".openbtn");
+    if (sidebar && openBtn && !sidebar.contains(e.target) && !openBtn.contains(e.target)) {
+      if (sidebar.style.width === "320px") {
+        closeNav();
+      }
+    }
+  });
+</script>
 </body>
 </html>

@@ -1,207 +1,258 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Система управління наказами</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-/* ================================================= */
-/* === ОСНОВНІ СТИЛІ ================================== */
-/* ================================================= */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-    background: #f3f4f6;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    transition: background 0.3s, color 0.3s;
-}
-/* ТЕМНА ТЕМА */
-.dark body { background: #111827; color: #e5e7eb; }
-.header {
-    background: #2d6a4f;
-    color: white;
-    padding: 1rem 2rem;
-    text-align: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    z-index: 1000;
-    position: sticky;
-    top: 0;
-}
-.dark .header { background: #1f2937; }
-.header .title { font-size: 1.3rem; font-weight: 600; }
-.main-container {
-    flex: 1;
-    padding: 2rem;
-    transition: margin-left 0.3s;
-}
-/* САЙДБАР */
-.sidebar {
-    height: 100%;
-    width: 0;
-    position: fixed;
-    top: 0;
-    left: 0;
-    background: #1f2937;
-    padding-top: 70px;
-    transition: 0.3s;
-    overflow-x: hidden;
-    z-index: 1001;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.5);
-}
-.sidebar.open { width: 260px; }
-.sidebar a, .sidebar button {
-    display: flex;
-    align-items: center;
-    padding: 0.75rem 1.5rem;
-    color: #e5e7eb;
-    font-weight: 500;
-    text-decoration: none;
-    margin: 0.25rem 1rem;
-    border-radius: 8px;
-    transition: background 0.3s;
-    background: none;
-    border: none;
-    cursor: pointer;
-}
-.sidebar a i, .sidebar button i { margin-right: 0.75rem; width: 20px; text-align: center; }
-.sidebar a:hover, .sidebar button:hover { background: #374151; }
-.closebtn {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    width: 36px;
-    height: 36px;
-    background: #dc2626;
-    color: white;
-    font-size: 18px;
-    border-radius: 8px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-}
-.openbtn {
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    background: #16a34a;
-    color: white;
-    padding: 0.75rem 1rem;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    z-index: 1002;
-    transition: all 0.3s; /* Додано для плавного приховування */
-}
-.openbtn.hidden { opacity: 0; pointer-events: none; }
-.openbtn:hover { background: #15803d; }
-#logoutBtn { background: #dc2626; margin: 1rem; width: calc(100% - 2rem); }
-#logoutBtn:hover { background: #b91c1c; }
-.footer {
-    background: #2d6a4f;
-    color: white;
-    text-align: center;
-    padding: 1rem;
-    font-size: 0.875rem;
-    margin-top: auto;
-}
-.dark .footer { background: #1f2937; }
-.card {
-    background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    margin-bottom: 1.5rem;
-}
-.dark .card { background: #1f2937; color: #e5e7eb; }
-/* СТИЛІ ТАБЛИЦІ ТА СТАТУСІВ */
-.table-responsive { overflow-x: auto; }
-.table-auto th, .table-auto td { padding: 0.75rem 1rem; text-align: left; }
-.table-auto th { background: #e5e7eb; font-weight: 600; color: #374151; }
-.dark .table-auto th { background: #374151; color: #f3f4f6; }
-.table-auto tr:nth-child(even) { background: #f9fafb; }
-.dark .table-auto tr:nth-child(even) { background: #111827; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Система обліку наказів</title>
+  <!-- Tailwind CDN — для курсової/демо це нормально! У продакшені ставлять локально -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-/* ВИПРАВЛЕНО: Приведено до нижнього регістру, щоб відповідати логіці JS */
-.status-активний { background-color: #d1fae5; color: #065f46; padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 500; }
-.status-виконаний { background-color: #bfdbfe; color: #1e40af; padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 500; }
-.status-архів { background-color: #fce7f3; color: #9d174d; padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 500; }
+  <script src="/auth-helper.js"></script>
 
-/* МОДАЛЬНЕ ВІКНО */
-.modal {
-    display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);
-}
-.modal-content {
-    background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 500px; border-radius: 10px;
-}
-.dark .modal-content { background-color: #1f2937; color: #e5e7eb; border-color: #374151; }
-.close { color: #aaa; float: right; font-size: 28px; font-weight: bold; }
-.close:hover, .close:focus { color: #000; text-decoration: none; cursor: pointer; }
-.dark .close:hover, .dark .close:focus { color: #fff; }
-    </style>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #f3f4f6;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.3s, color 0.3s;
+    }
+    .dark body { background: #111827; color: #e5e7eb; }
+
+    .header {
+      background: #2d6a4f;
+      color: white;
+      padding: 1rem 2rem;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .dark .header { background: #1f2937; }
+    .header .title { font-size: 1.3rem; font-weight: 600; }
+    .header .subtitle { font-size: 0.9rem; opacity: 0.9; margin-top: 0.25rem; }
+
+    .main-container {
+      flex: 1;
+      padding: 2rem;
+      transition: margin-left 0.3s;
+    }
+    .content { max-width: 1000px; margin: 0 auto; width: 100%; }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+    .dark .card { background: #1f2937; color: #e5e7eb; }
+
+    h1 { color: #1f2937; font-size: 2rem; font-weight: 600; margin-bottom: 1.5rem; text-align: center; }
+    .dark h1 { color: #f3f4f6; }
+
+    .search-bar {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .search-bar input, .search-bar select {
+      padding: 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 1rem;
+      background: #f9fafb;
+      flex: 1;
+      min-width: 200px;
+    }
+    .dark .search-bar input, .dark .search-bar select { 
+      background: #374151; 
+      border-color: #4b5563; 
+      color: #e5e7eb; 
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn-primary { background: #16a34a; color: white; }
+    .btn-primary:hover { background: #15803d; }
+    .btn-secondary { background: #6b7280; color: white; }
+    .btn-secondary:hover { background: #4b5563; }
+    .btn-danger { background: #dc2626; color: white; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-sm { padding: 0.5rem 1rem; font-size: 0.875rem; }
+
+    .order-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem;
+      background: #f8fafc;
+      border-radius: 12px;
+      margin-bottom: 0.75rem;
+      transition: all 0.3s;
+      border: 1px solid #e2e8f0;
+    }
+    .dark .order-item { background: #1f2937; border-color: #374151; }
+    .order-item:hover { background: #f1f5f9; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .dark .order-item:hover { background: #111827; }
+
+    .order-title { font-weight: 600; color: #1f2937; flex: 1; font-size: 1.1rem; }
+    .dark .order-title { color: #e5e7eb; }
+
+    .order-meta { font-size: 0.875rem; color: #6b7280; text-align: right; min-width: 140px; }
+    .dark .order-meta { color: #9ca3af; }
+
+    .status-active { color: #16a34a; font-weight: 600; }
+    .status-done { color: #6b7280; font-weight: 600; }
+    .status-archive { color: #dc2626; font-weight: 600; }
+
+    .order-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+    /* БОКОВЕ МЕНЮ */
+    .sidebar {
+      height: 100%; width: 0; position: fixed; top: 0; left: 0;
+      background: #1f2937; padding-top: 70px; transition: 0.3s;
+      overflow-x: hidden; z-index: 1001;
+    }
+    .sidebar.open { width: 260px; }
+    .sidebar a, .sidebar button {
+      display: flex; align-items: center; padding: 0.75rem 1.5rem;
+      color: #e5e7eb; font-weight: 500; text-decoration: none;
+      margin: 0.25rem 1rem; border-radius: 8px; transition: background 0.3s;
+    }
+    .sidebar a i, .sidebar button i { margin-right: 0.75rem; width: 20px; text-align: center; }
+    .sidebar a:hover, .sidebar button:hover { background: #374151; }
+
+    .closebtn {
+      position: absolute; top: 15px; right: 15px; width: 36px; height: 36px;
+      background: #dc2626; color: white; font-size: 18px; border-radius: 8px;
+      display: flex; justify-content: center; align-items: center; cursor: pointer;
+    }
+    .openbtn {
+      position: fixed; top: 15px; left: 15px; background: #16a34a; color: white;
+      padding: 0.75rem 1rem; border: none; border-radius: 8px; font-weight: 600;
+      cursor: pointer; z-index: 1002;
+    }
+    .openbtn:hover { background: #15803d; }
+    #logoutBtn { background: #dc2626; margin: 1rem; width: calc(100% - 2rem); }
+    #logoutBtn:hover { background: #b91c1c; }
+
+    .footer {
+      background: #2d6a4f;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.875rem;
+    }
+    .dark .footer { background: #1f2937; }
+
+    /* СПОВІЩЕННЯ */
+    #notificationsBtn {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      z-index: 1000;
+    }
+    #notificationBadge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: #ef4444;
+      color: white;
+      font-size: 0.75rem;
+      min-width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      .main-container { padding-top: 80px; padding-left: 1rem; padding-right: 1rem; }
+      .order-item { flex-direction: column; align-items: flex-start; gap: 1rem; }
+      .order-actions { width: 100%; justify-content: stretch; }
+      .order-actions a, .order-actions button { flex: 1; text-align: center; }
+    }
+  </style>
 </head>
 <body>
 
   <header class="header">
-    <div class="title">Активні накази</div>
+    <div class="title">Система обліку наказів та розпоряджень</div>
+    <div class="subtitle">Військовий інститут телекомунікацій та інформатизації</div>
   </header>
 
   <button class="openbtn" id="openBtn" onclick="openNav()">Меню</button>
 
+  <!-- БОКОВЕ МЕНЮ -->
   <div id="mySidebar" class="sidebar">
-    <button class="closebtn" onclick="closeNav()">
-        <i class="fas fa-times"></i>
-    </button>
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">X</a>
     <div class="px-4 mb-6 text-center">
       <p id="userName" class="text-white font-semibold">Користувач</p>
     </div>
-    <a href="/profile.html"><i class="fas fa-user"></i> Профіль</a>
-    <a href="/add-order.html"><i class="fas fa-plus"></i> Додати наказ</a>
-    <a href="/settings.html"><i class="fas fa-cog"></i> Налаштування</a>
-    <a href="/archive.html"><i class="fas fa-archive"></i> Архів</a>
-    <a href="/messages.html" id="messagesLink"><i class="fas fa-envelope"></i> Повідомлення (<span id="unreadCount">0</span>)</a>
-    <a href="/help.html"><i class="fas fa-question-circle"></i> Допомога</a>
-    <button id="logoutBtn" class="w-full text-left"><i class="fas fa-sign-out-alt"></i> Вийти</button>
+    <a href="/profile.html">Профіль</a>
+    <a href="/add-order.html">Додати наказ</a>
+    <a href="/settings.html">Налаштування</a>
+    <a href="/archive.html">Архів</a>
+    <a href="/messages.html">Повідомлення</a>
+    <a href="/help.html">Допомога</a>
+    <button id="logoutBtn" class="w-full text-left">Вийти</button>
+  </div>
+
+  <!-- СПОВІЩЕННЯ -->
+  <button id="notificationsBtn" class="relative p-3 bg-white dark:bg-gray-800 rounded-full shadow-lg hover:shadow-xl transition-all">
+    <i class="fas fa-bell text-2xl text-gray-700 dark:text-gray-300"></i>
+    <span id="notificationBadge" class="absolute">0</span>
+  </button>
+
+  <div id="notificationsModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-11/12 max-w-md max-h-96 overflow-y-auto">
+      <div class="p-5 border-b dark:border-gray-700 flex justify-between items-center">
+        <h3 class="text-xl font-bold">Сповіщення</h3>
+        <button onclick="closeNotifications()" class="text-gray-500 hover:text-gray-700 text-2xl">X</button>
+      </div>
+      <div id="notificationsList" class="p-5 space-y-3">
+        <p class="text-center text-gray-500">Завантаження...</p>
+      </div>
+    </div>
   </div>
 
   <div class="main-container" id="mainContainer">
-    <div class="card p-4 flex flex-col md:flex-row gap-4">
-      <input type="text" id="searchInput" placeholder="Пошук за назвою..." class="flex-grow p-2 border rounded-lg">
-      <select id="statusFilter" class="p-2 border rounded-lg">
-        <option value="Активний">Активні</option>
-        <option value="Виконаний">Виконані</option>
-        <option value="Архів">Архів</option>
-        <option value="">Всі</option>
-      </select>
-      <select id="sortOrders" class="p-2 border rounded-lg">
-        <option value="createdAt-desc">Сортувати: Новіші</option>
-        <option value="createdAt-asc">Сортувати: Старіші</option>
-        <option value="title-asc">Сортувати: А-Я</option>
-        <option value="title-desc">Сортувати: Я-А</option>
-      </select>
-      <button onclick="loadOrders()" class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg font-semibold"><i class="fas fa-sync"></i> Оновити</button>
-    </div>
+    <div class="content">
+      <h1>Накази та розпорядження</h1>
 
-    <div class="card table-responsive">
-      <table class="table-auto w-full">
-        <thead>
-          <tr>
-            <th>Назва наказу</th>
-            <th>Статус</th>
-            <th>Кінцевий термін</th>
-            <th>Створив</th>
-            <th>Дії</th>
-          </tr>
-        </thead>
-        <tbody id="ordersTableBody">
-          <tr><td colspan="5" class="text-center">Завантаження наказів...</td></tr>
-        </tbody>
-      </table>
+      <div class="card">
+        <div class="search-bar">
+          <input type="text" id="searchInput" placeholder="Пошук за назвою...">
+          <select id="statusFilter">
+            <option value="">Всі статуси</option>
+            <option value="Активний">Активний</option>
+            <option value="Виконаний">Виконаний</option>
+            <option value="Архів">Архів</option>
+          </select>
+          <button class="btn btn-primary" onclick="loadOrders()">Пошук</button>
+        </div>
+
+        <div id="ordersList" class="space-y-3">
+          <!-- Тут будуть накази -->
+        </div>
+
+        <div class="text-center mt-8">
+          <a href="/add-order.html" class="btn btn-primary text-lg px-10">Додати новий наказ</a>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -209,280 +260,198 @@ body {
     © 2025 ВІТІ ім. Героїв Крут. Всі права захищено.
   </footer>
 
-    <div id="deleteModal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal('deleteModal')">&times;</span>
-      <h2 class="text-xl font-bold mb-4">Підтвердження видалення</h2>
-      <p>Ви впевнені, що хочете видалити наказ "<strong id="orderTitleToDelete"></strong>"? Цю дію не можна скасувати.</p>
-      <div class="flex justify-end gap-3 mt-6">
-        <button onclick="closeModal('deleteModal')" class="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg">Скасувати</button>
-        <button id="confirmDeleteBtn" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg">Видалити</button>
-      </div>
-    </div>
-  </div>
-
   <script>
-    // =================================================
-    // === JAVASCRIPT: ВИПРАВЛЕНО ТА ОПТИМІЗОВАНО ===
-    // =================================================
+  // === ПЕРЕВІРКА АВТОРИЗАЦІЇ ===
+if (!window.user || !window.user.id) {
+  alert('Увійдіть у систему!');
+  location.href = '/login.html';
+} 
 
-    // === ГЛОБАЛЬНІ ЗМІННІ ===
-    let user = {}; 
-    let allOrders = [];
-    let currentSettings = { theme: 'light', defaultSort: 'createdAt-desc', autoRefresh: 0 };
-    let refreshInterval;
-    
-    // === 0. ПЕРЕВІРКА ТА ІНІЦІАЛІЗАЦІЯ КОРИСТУВАЧА ===
-    function checkAuth() {
-        try {
-            const userString = localStorage.getItem('user');
-            if (userString) {
-                user = JSON.parse(userString);
-            }
-        } catch (e) {
-            console.error('Помилка парсингу даних користувача:', e);
-            localStorage.removeItem('user');
-            user = {}; 
-        }
-
-        if (!user || !user.id) {
-            alert('Увійдіть у систему!');
-            window.location.href = '/login.html';
-            return false;
-        }
-        
-        document.getElementById('userName').textContent = user.name || 'Користувач';
-        return true;
-    }
-
-    // === ЗАВАНТАЖЕННЯ НАЛАШТУВАНЬ ТА ЗАСТОСУВАННЯ ТЕМИ ===
-    async function loadSettings() {
-      if (!user.id) return;
+    // === СПОВІЩЕННЯ ===
+    async function loadNotifications() {
       try {
-        const res = await fetch(`/api/users/${user.id}/settings`, {
-          headers: { 'X-User-Id': user.id, 'X-User': JSON.stringify(user) }
-        });
-        if (res.ok) {
-            const settings = await res.json();
-            currentSettings = { ...currentSettings, ...settings };
+        const res = await fetch('/api/notifications');
+        const notifs = await res.json();
+        const unread = notifs.filter(n => !n.read).length;
+
+        const badge = document.getElementById('notificationBadge');
+        badge.textContent = unread > 99 ? '99+' : unread;
+        badge.style.display = unread > 0 ? 'flex' : 'none';
+
+        const list = document.getElementById('notificationsList');
+        if (notifs.length === 0) {
+          list.innerHTML = '<p class="text-center text-gray-500">Немає сповіщень</p>';
         } else {
-            console.warn("Не вдалося завантажити налаштування користувача. Використовуємо стандартні.");
+          list.innerHTML = notifs.map(n => `
+            <div class="p-3 rounded-lg ${n.read ? 'bg-gray-100 dark:bg-gray-700' : 'bg-blue-50 dark:bg-blue-900/40 border-l-4 border-blue-500'}">
+              <p class="font-medium text-sm">${n.message}</p>
+              <p class="text-xs text-gray-500 mt-1">${new Date(n.createdAt).toLocaleString('uk-UA')}</p>
+            </div>
+          `).join('');
         }
-
-        // Застосувати тему
-        if (currentSettings.theme === 'dark') {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-
-        // Застосувати сортування
-        document.getElementById('sortOrders').value = currentSettings.defaultSort || 'createdAt-desc';
-
-        // Встановити автооновлення
-        setupAutoRefresh(currentSettings.autoRefresh);
-
-      } catch (err) {
-        console.error('Помилка мережі при завантаженні налаштувань:', err);
+      } catch (e) {
+        console.log('Сповіщення не завантажились');
       }
     }
 
-    // === ЛОГІКА АВТООНОВЛЕННЯ ===
-    function setupAutoRefresh(seconds) {
-      if (refreshInterval) clearInterval(refreshInterval);
-      const delay = parseInt(seconds) * 1000;
-      if (delay > 0) {
-        refreshInterval = setInterval(() => {
-          loadOrders(true); 
-        }, delay);
-        console.log(`Автооновлення встановлено на ${seconds} секунд.`);
+    document.getElementById('notificationsBtn').onclick = () => {
+      document.getElementById('notificationsModal').classList.remove('hidden');
+      document.getElementById('notificationsModal').classList.add('flex');
+      loadNotifications();
+      fetch('/api/notifications/read', { method: 'PUT' }).then(() => {
+        document.getElementById('notificationBadge').style.display = 'none';
+      });
+    };
+
+    function closeNotifications() {
+      document.getElementById('notificationsModal').classList.add('hidden');
+      document.getElementById('notificationsModal').classList.remove('flex');
+    }
+
+    setInterval(loadNotifications, 20000);
+    loadNotifications();
+
+    // === НАЛАШТУВАННЯ ===
+    async function applySettings() {
+      try {
+        const res = await fetch(`/api/users/${window.user.id}/settings`);
+        const s = await res.json();
+
+        if (s.theme === 'dark') document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
+
+        if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+        if (s.autoRefresh > 0) {
+          autoRefreshInterval = setInterval(loadOrders, s.autoRefresh * 1000);
+        }
+      } catch (e) {
+        console.log('Налаштування не завантажились');
       }
     }
 
     // === ЗАВАНТАЖЕННЯ НАКАЗІВ ===
-    async function loadOrders(isSilent = false) {
-      if (!user.id) return; 
-
-      const tableBody = document.getElementById('ordersTableBody');
-      if (!isSilent) tableBody.innerHTML = '<tr><td colspan="5" class="text-center p-4">Завантаження наказів...</td></tr>';
-
-      const status = document.getElementById('statusFilter').value;
-      const searchTitle = document.getElementById('searchInput').value;
-      
-      /* ВИПРАВЛЕНО: Екранування параметрів URL-адреси */
-      const url = `/api/orders?status=${encodeURIComponent(status)}&searchTitle=${encodeURIComponent(searchTitle)}`;
-
+    async function loadOrders() {
       try {
-        const res = await fetch(url, {
-          headers: { 'X-User-Id': user.id, 'X-User': JSON.stringify(user) }
+        const search = document.getElementById('searchInput').value.trim();
+        const status = document.getElementById('statusFilter').value;
+
+        const params = new URLSearchParams();
+        if (search) params.append('searchTitle', search);
+        if (status) params.append('status', status);
+
+        const res = await fetch(`/api/orders?${params}`);
+        const orders = await res.json();
+
+        const list = document.getElementById('ordersList');
+        list.innerHTML = '';
+
+        if (!orders || orders.length === 0) {
+          list.innerHTML = '<p class="text-center text-gray-500 py-12 text-lg">Наказів не знайдено</p>';
+          return;
+        }
+
+        orders.forEach(o => {
+          const deadline = o.deadline ? new Date(o.deadline).toLocaleDateString('uk-UA') : '—';
+          const statusClass = o.status === 'Активний' ? 'status-active' :
+                              o.status === 'Виконаний' ? 'status-done' : 'status-archive';
+
+          const item = document.createElement('div');
+          item.className = 'order-item';
+          item.innerHTML = `
+            <div class="order-title">${o.title || 'Без назви'}</div>
+            <div class="order-meta">
+              <div>Створено: ${new Date(o.createdAt).toLocaleDateString('uk-UA')}</div>
+              <div>Дедлайн: ${deadline}</div>
+              <div class="${statusClass}">${o.status}</div>
+            </div>
+            <div class="order-actions">
+              <a href="/edit-order.html?id=${o._id}" class="btn btn-sm btn-secondary">Редагувати</a>
+              <button onclick="deleteOrder('${o._id}')" class="btn btn-sm btn-danger">Видалити</button>
+              <a href="/api/orders/${o._id}/docx" target="_blank" class="btn btn-sm btn-primary">DOCX</a>
+            </div>
+          `;
+          list.appendChild(item);
         });
-        
-        if (!res.ok) {
-            throw new Error(`Помилка HTTP: ${res.status}`);
-        }
-
-        allOrders = await res.json();
-        renderOrders();
-        loadUnreadNotificationsCount(); 
-      } catch (error) {
-        if (!isSilent) {
-          tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-red-500 p-4">Помилка завантаження даних. Перевірте консоль.</td></tr>';
-        }
-        console.error('Помилка завантаження наказів:', error);
-      }
-    }
-
-    // === РЕНДЕРИНГ ТА СОРТУВАННЯ ===
-    function renderOrders() {
-      const tableBody = document.getElementById('ordersTableBody');
-      const sortValue = document.getElementById('sortOrders').value;
-      const [field, direction] = sortValue.split('-');
-
-      const sortedOrders = [...allOrders].sort((a, b) => {
-        let comparison = 0;
-        
-        if (field === 'createdAt') {
-          const dateA = new Date(a.createdAt).getTime();
-          const dateB = new Date(b.createdAt).getTime();
-          comparison = dateA - dateB;
-        } else if (field === 'title') {
-          comparison = a.title.localeCompare(b.title, 'uk', { sensitivity: 'base' });
-        }
-
-        return direction === 'desc' ? comparison * -1 : comparison;
-      });
-
-      if (sortedOrders.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="5" class="text-center p-4">Накази не знайдено.</td></tr>';
-        return;
-      }
-
-      tableBody.innerHTML = sortedOrders.map(order => {
-        const deadlineText = order.deadline ? new Date(order.deadline).toLocaleDateString('uk-UA') : 'Не встановлено';
-        
-        /* ОПТИМІЗАЦІЯ: ВИЛУЧЕНО НЕБЕЗПЕЧНЕ ЕКРАНУВАННЯ. Передаємо лише ID у модаль. */
-        const statusClass = order.status.toLowerCase().replace(' ', '-');
-
-        return `
-          <tr id="order-${order._id}">
-            <td>
-              <a href="/view-order.html?id=${order._id}" class="text-blue-600 hover:text-blue-800 font-medium">${order.title}</a>
-            </td>
-            <td><span class="status-${statusClass}">${order.status}</span></td>
-            <td>${deadlineText}</td>
-            <td>${order.createdByName || 'Адміністратор'}</td>
-            <td class="whitespace-nowrap">
-              <a href="/edit-order.html?id=${order._id}" class="text-yellow-600 hover:text-yellow-700 mr-3" title="Редагувати"><i class="fas fa-edit"></i></a>
-              <a href="/api/orders/${order._id}/docx" class="text-blue-600 hover:text-blue-700 mr-3" title="Завантажити DOCX"><i class="fas fa-file-word"></i></a>
-              <button onclick="showDeleteModal('${order._id}')" class="text-red-600 hover:text-red-700" title="Видалити"><i class="fas fa-trash"></i></button>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    // === ЛОГІКА МОДАЛЬНОГО ВІКНА (ОПТИМІЗОВАНО) ===
-    function showDeleteModal(orderId) {
-      /* БЕЗПЕКА: Отримуємо назву з глобального масиву для уникнення XSS через атрибути HTML */
-      const order = allOrders.find(o => o._id === orderId);
-      if (!order) return;
-
-      document.getElementById('orderTitleToDelete').textContent = order.title;
-      const confirmBtn = document.getElementById('confirmDeleteBtn');
-      
-      /* ВИПРАВЛЕННЯ: Додано перевірку, щоб уникнути подвійного прив'язування подій */
-      confirmBtn.onclick = null; 
-      confirmBtn.onclick = () => deleteOrder(orderId);
-      
-      document.getElementById('deleteModal').style.display = 'block';
-    }
-
-    function closeModal(modalId) {
-      document.getElementById(modalId).style.display = 'none';
-    }
-
-    // === ВИДАЛЕННЯ НАКАЗУ ===
-    async function deleteOrder(orderId) {
-      closeModal('deleteModal');
-      try {
-        const res = await fetch(`/api/orders/${orderId}`, {
-          method: 'DELETE',
-          headers: { 'X-User-Id': user.id, 'X-User': JSON.stringify(user) }
-        });
-        
-        const data = await res.json(); 
-
-        if (res.ok) {
-          alert('Наказ успішно видалено!');
-          loadOrders(true); 
-        } else {
-          alert('Помилка видалення: ' + (data.error || 'Невідома помилка'));
-        }
       } catch (err) {
-        alert('Помилка мережі при видаленні. Перевірте консоль.');
-        console.error('Помилка видалення:', err);
+        document.getElementById('ordersList').innerHTML = '<p class="text-red-600 text-center">Помилка завантаження наказів</p>';
       }
     }
 
-    // === ЛОГІКА СПОВІЩЕНЬ ===
-    async function loadUnreadNotificationsCount() {
-      if (!user.id) return;
+    window.deleteOrder = async (id) => {
+      if (!confirm('Видалити наказ назавжди?')) return;
       try {
-        const res = await fetch('/api/notifications', {
-          headers: { 'X-User-Id': user.id, 'X-User': JSON.stringify(user) }
-        });
-        
-        const notifications = res.ok ? await res.json() : []; 
-        const unreadCount = notifications.filter(n => !n.read).length;
-        
-        const countElement = document.getElementById('unreadCount');
-        countElement.textContent = unreadCount;
-
-        const messagesLink = document.getElementById('messagesLink');
-        messagesLink.innerHTML = `<i class="fas fa-envelope"></i> Повідомлення (<span id="unreadCount">${unreadCount}</span>)`;
-        
-        if (unreadCount > 0) {
-          messagesLink.classList.add('bg-yellow-500', 'text-black'); /* Додано text-black для кращої контрастності */
-        } else {
-          messagesLink.classList.remove('bg-yellow-500', 'text-black');
-        }
-
-      } catch (err) {
-        console.error('Помилка завантаження сповіщень:', err);
+        await fetch(`/api/orders/${id}`, { method: 'DELETE' });
+        loadOrders();
+      } catch (e) {
+        alert('Помилка видалення');
       }
-    }
+    };
 
-    // === МЕНЮ ТА ВИХІД ===
+    // === ПОШУК ===
+    let searchTimeout;
+    document.getElementById('searchInput').addEventListener('input', () => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(loadOrders, 400);
+    });
+    document.getElementById('statusFilter').addEventListener('change', loadOrders);
+
+    // === МЕНЮ ===
     function openNav() {
       document.getElementById("mySidebar").classList.add('open');
       document.getElementById("mainContainer").style.marginLeft = "260px";
-      document.getElementById("openBtn").classList.add('hidden');
+      document.getElementById("openBtn").style.display = "none";
     }
     function closeNav() {
       document.getElementById("mySidebar").classList.remove('open');
       document.getElementById("mainContainer").style.marginLeft = "0";
-      document.getElementById("openBtn").classList.remove('hidden');
+      document.getElementById("openBtn").style.display = "block";
     }
 
+    // === ВИХІД ===
     document.getElementById('logoutBtn').addEventListener('click', () => {
-      localStorage.removeItem('user'); 
-      if (refreshInterval) clearInterval(refreshInterval);
+      localStorage.removeItem('user');
       location.href = '/login.html';
     });
 
-    // === ЗАПУСК ===
-    window.onload = () => {
-        if (!checkAuth()) return; 
-        
-      loadSettings();
-      loadOrders();
-      
-      // Обробники подій для фільтрації/сортування
-      document.getElementById('statusFilter').addEventListener('change', () => loadOrders());
-      document.getElementById('searchInput').addEventListener('input', () => loadOrders());
-      document.getElementById('sortOrders').addEventListener('change', () => renderOrders());
-    };
-  </script>
+    // === ГАРАНТОВАНЕ АВТООНОВЛЕННЯ КОЖНІ 3 СЕКУНДИ ===
+    setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        loadOrders();
+      }
+    }, 3000);
 
+    // === ПРИМУСОВЕ ОНОВЛЕННЯ ПРИ ПЕРЕХОДІ З add-order.html ===
+    if (location.hash === '#new') {
+      history.replaceState(null, null, '/index.html');
+      setTimeout(loadOrders, 500);
+    }
+
+    // === ЗАПУСК ===
+    applySettings();
+    loadOrders(); // перший раз одразу
+  </script>
+  <script src="sidebar.js"></script>
+  <script>
+  // Безпечний перехід на будь-яку сторінку з authUserId
+  function goToPage(page) {
+    const user = JSON.parse(localStorage.getItem('currentUser'));
+    if (user && user.id) {
+      location.href = `/${page}?authUserId=${user.id}`;
+    } else {
+      location.href = '/login.html';
+    }
+  }
+
+  // Якщо користувач вже на сторінці з authUserId — зберігаємо його
+  const params = new URLSearchParams(location.search);
+  const urlUserId = params.get('authUserId');
+  if (urlUserId) {
+    const saved = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    if (saved.id !== urlUserId) {
+      // Оновлюємо localStorage, якщо прийшли з правильним id
+      localStorage.setItem('currentUser', JSON.stringify({ ...saved, id: urlUserId }));
+    }
+  }
+</script>
 </body>
 </html>
