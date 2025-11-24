@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Реєстрація</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    .bg-gradient-custom {
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #4a69bd 100%);
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .animate-slide-up {
+      animation: slideUp 0.6s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .input-focus:focus {
+      border-color: #4a69bd;
+      box-shadow: 0 0 5px rgba(74, 105, 189, 0.5);
+    }
+  </style>
+</head>
+<body class="bg-gradient-custom flex items-center justify-center min-h-screen">
+  <div class="card p-8 w-full max-w-md text-white animate-slide-up">
+    <div class="text-center mb-6">
+      <i class="fas fa-user-plus text-4xl mb-2"></i>
+      <h2 class="text-3xl font-bold">Реєстрація</h2>
+    </div>
+    <form id="registerForm" class="space-y-5">
+      <div>
+        <label for="name" class="block text-sm font-medium">Ім'я</label>
+        <div class="relative">
+          <i class="fas fa-user absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+          <input type="text" id="name" name="name" required class="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 bg-white bg-opacity-20 text-white placeholder-gray-300 input-focus">
+        </div>
+      </div>
+      <div>
+        <label for="email" class="block text-sm font-medium">Електронна пошта</label>
+        <div class="relative">
+          <i class="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+          <input type="email" id="email" name="email" required class="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 bg-white bg-opacity-20 text-white placeholder-gray-300 input-focus">
+        </div>
+      </div>
+      <div>
+        <label for="password" class="block text-sm font-medium">Пароль</label>
+        <div class="relative">
+          <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+          <input type="password" id="password" name="password" required class="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 bg-white bg-opacity-20 text-white placeholder-gray-300 input-focus">
+        </div>
+      </div>
+      <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-semibold transition duration-300 shadow-md hover:shadow-lg">Зареєструватися</button>
+    </form>
+    <div id="message" class="mt-4 text-center"></div>
+    <div class="mt-4 text-center text-sm">
+        Вже є акаунт? <a href="login.html" class="text-indigo-400 hover:text-indigo-300 font-semibold">Увійти</a>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('registerForm');
+      const messageDiv = document.getElementById('message');
+
+      if (!form) {
+        console.error('Форма з ID "registerForm" не знайдена!');
+        return;
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        messageDiv.innerHTML = ''; // Очистити попередні повідомлення
+
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        // Початкова перевірка на клієнті
+        if (!name || !email || !password) {
+            messageDiv.innerHTML = '<p class="text-red-400">Будь ласка, заповніть всі поля.</p>';
+            return;
+        }
+
+        try {
+            // Маршрут: /register (відповідно до вашого server.js)
+            const response = await fetch('/register', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name, email, password })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // УСПІХ: Зберігаємо дані користувача та перенаправляємо
+              localStorage.setItem('user', JSON.stringify(data.user));
+              messageDiv.innerHTML = '<p class="text-green-400">' + data.message + ' Перенаправлення...</p>';
+              
+              // Перенаправляємо на головну сторінку
+              setTimeout(() => {
+                  window.location.href = '/index.html'; 
+              }, 500); 
+
+            } else {
+                // ПОМИЛКА: Відображаємо повідомлення про помилку з сервера
+              const errorMessage = data.error || 'Невідома помилка реєстрації';
+              messageDiv.innerHTML = '<p class="text-red-400">' + errorMessage + '</p>';
+            }
+        } catch (error) {
+            console.error('Fetch error:', error);
+            messageDiv.innerHTML = '<p class="text-red-400">Помилка з\'єднання з сервером.</p>';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

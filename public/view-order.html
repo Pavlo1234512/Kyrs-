@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Перегляд наказу</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/mammoth@1.4.2/mammoth.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.11/purify.min.js"></script>
+  <style>
+    .bg-gradient-custom {
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #4a69bd 100%);
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .order-document {
+      background: #fff;
+      padding: 20px;
+      border: 1px solid #ddd;
+      margin-top: 20px;
+      color: #333;
+      width: 100%;
+      font-size: 12pt; /* Забезпечуємо чіткий розмір шрифту */
+      line-height: 1.5; /* Покращуємо міжрядковий інтервал */
+    }
+  </style>
+</head>
+<body class="bg-gradient-custom min-h-screen p-6">
+  <div class="card p-6 max-w-2xl mx-auto">
+    <h1 class="text-2xl font-bold text-white text-center mb-4">Перегляд наказу</h1>
+    <div id="orderDocument" class="order-document"></div>
+    <button id="downloadPdfBtn" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-semibold w-full mt-4">Завантажити як PDF</button>
+    <a href="/index.html" class="block mt-2 bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg text-center font-semibold">Назад</a>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const orderId = urlParams.get('id');
+
+      if (orderId) {
+        fetch(`http://localhost:3000/api/orders/${orderId}`)
+          .then(response => response.json())
+          .then(order => {
+            const orderDocument = document.getElementById('orderDocument');
+            if (order.filePath) {
+              fetch(`http://localhost:3000${order.filePath}`)
+                .then(response => {
+                  if (!response.ok) throw new Error('Файл не знайдено');
+                  return response.arrayBuffer();
+                })
+                .then(arrayBuffer => {
+                  return mammoth.convertToHtml({ arrayBuffer: arrayBuffer });
+                })
+                .then(result => {
+                  orderDocument.innerHTML = DOMPurify.sanitize(result.value);
+                })
+                .catch(error => {
+                  console.error('Помилка парсингу .docx:', error);
+                  orderDocument.innerHTML = '<p>Помилка при завантаженні вмісту файлу. Переконайтеся, що файл є валідним DOCX.</p>';
+                });
+            } else {
+              orderDocument.innerHTML = '<p>Файл не знайдено.</p>';
+            }
+
+            document.getElementById('downloadPdfBtn').addEventListener('click', () => {
+              const { jsPDF } = window.jspdf;
+              const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+              });
+
+              // Використовуємо html метод для рендерингу
+              doc.html(orderDocument, {
+                callback: function (doc) {
+                  doc.save(`${order.title || `order_${orderId}`}.pdf`);
+                },
+                x: 10,
+                y: 10,
+                width: 190, // Ширина сторінки A4 мінус поля
+                windowWidth: orderDocument.scrollWidth
+              }).catch(error => {
+                console.error('Помилка при рендерингу PDF:', error);
+              });
+            });
+          })
+          .catch(error => {
+            console.error('Помилка завантаження наказу:', error);
+            document.getElementById('orderDocument').innerHTML = '<p>Помилка при завантаженні наказу.</p>';
+          });
+      }
+    });
+</script>
+</body>
+</html>

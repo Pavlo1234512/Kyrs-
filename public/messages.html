@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Повідомлення</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    body { 
+      background: #f3f4f6; 
+      font-family: 'Segoe UI', sans-serif; 
+      min-height: 100vh; 
+      display: flex; 
+      flex-direction: column;
+      transition: background 0.3s, color 0.3s;
+    }
+    .dark body { background: #111827; color: #e5e7eb; }
+
+    .header { 
+      background: #2d6a4f; 
+      color: white; 
+      padding: 1rem; 
+      text-align: center; 
+      position: relative; 
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .dark .header { background: #1f2937; }
+
+    .badge { 
+      position: absolute; 
+      top: 10px; 
+      right: 20px; 
+      background: #ef4444; 
+      color: white; 
+      border-radius: 50%; 
+      width: 24px; 
+      height: 24px; 
+      font-size: 12px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+    }
+
+    .message { 
+      transition: all 0.3s; 
+      cursor: pointer; 
+      border-left: 4px solid transparent; 
+      padding: 1rem; 
+      border-radius: 0.5rem; 
+      border: 1px solid #e5e7eb;
+    }
+    .message.unread { 
+      background: #dbeafe; 
+      border-left-color: #3b82f6; 
+      font-weight: 600; 
+    }
+    .dark .message.unread { background: #1e3a8a; }
+    .message:hover { background: #f3f4f6; }
+    .dark .message:hover { background: #374151; }
+
+    /* Бокове меню — той самий стиль, що в settings.html */
+    .sidebar {
+      height: 100%;
+      width: 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      background: #1f2937;
+      padding-top: 70px;
+      transition: 0.3s;
+      overflow-x: hidden;
+      z-index: 1001;
+    }
+    .sidebar.open { width: 260px; }
+    .sidebar a, .sidebar button {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1.5rem;
+      color: #e5e7eb;
+      font-weight: 500;
+      text-decoration: none;
+      margin: 0.25rem 1rem;
+      border-radius: 8px;
+      transition: background 0.3s;
+    }
+    .sidebar a i, .sidebar button i { margin-right: 0.75rem; width: 20px; text-align: center; }
+    .sidebar a:hover, .sidebar button:hover { background: #374151; }
+
+    .closebtn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 36px;
+      height: 36px;
+      background: #dc2626;
+      color: white;
+      font-size: 18px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .openbtn {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      background: #16a34a;
+      color: white;
+      padding: 0.75rem 1rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      z-index: 1002;
+    }
+    .openbtn:hover { background: #15803d; }
+
+    #logoutBtn { 
+      background: #dc2626; 
+      margin: 1rem; 
+      width: calc(100% - 2rem); 
+    }
+    #logoutBtn:hover { background: #b91c1c; }
+
+    footer {
+      background: #2d6a4f;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.875rem;
+    }
+    .dark footer { background: #1f2937; }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <h1 class="text-xl font-bold">Повідомлення</h1>
+    <div id="unreadBadge" class="badge hidden">0</div>
+  </header>
+
+  <button class="openbtn" id="openBtn" onclick="openNav()">Меню</button>
+
+  <!-- БОКОВЕ МЕНЮ (те саме, що в settings.html) -->
+  <div id="mySidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">X</a>
+    <div class="px-4 mb-6 text-center">
+      <p id="userName" class="text-white font-semibold">Користувач</p>
+    </div>
+    <a href="/profile.html"><i class="fas fa-user"></i> Профіль</a>
+    <a href="/add-order.html"><i class="fas fa-plus"></i> Додати наказ</a>
+    <a href="/settings.html"><i class="fas fa-cog"></i> Налаштування</a>
+    <a href="/archive.html"><i class="fas fa-archive"></i> Архів</a>
+    <a href="/messages.html"><i class="fas fa-envelope"></i> Повідомлення</a>
+    <a href="/help.html"><i class="fas fa-question-circle"></i> Допомога</a>
+    <button id="logoutBtn" class="w-full text-left"><i class="fas fa-sign-out-alt"></i> Вийти</button>
+  </div>
+
+  <main class="flex-1 p-6">
+    <div class="max-w-4xl mx-auto">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold">Вхідні повідомлення</h2>
+          <button onclick="markAllAsRead()" class="text-blue-600 hover:underline">Позначити всі як прочитані</button>
+        </div>
+
+        <div id="messagesList" class="space-y-4"></div>
+
+        <div id="noMessages" class="text-center text-gray-500 py-12 hidden">
+          <i class="fas fa-envelope-open text-6xl mb-4 opacity-30"></i>
+          <p>Немає повідомлень</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>© 2025 ВІТІ ім. Героїв Крут. Всі права захищено.</footer>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+    if (!user.id) location.href = '/login.html';
+    document.getElementById('userName').textContent = user.name || 'Користувач';
+
+    const notificationSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-software-interface-notification-2579.mp3');
+    let soundEnabled = true;
+
+    async function loadSettings() {
+      try {
+        const res = await fetch(`/api/users/${user.id}/settings`, { headers: { 'X-User-Id': user.id } });
+        const s = await res.json();
+        soundEnabled = s.soundEnabled !== false;
+        if (s.theme === 'dark') document.documentElement.classList.add('dark');
+      } catch (e) { console.error(e); }
+    }
+
+    const messages = [
+      { id: 1, title: "Новий наказ додано", body: "Наказ №2025-001 успішно додано", date: "2025-04-05T10:30:00", read: false },
+      { id: 2, title: "Термін виконання наближається", body: "Наказ 'Про захід' — дедлайн 10.04.2025", date: "2025-04-04T14:20:00", read: true },
+      { id: 3, title: "Система оновлена", body: "Додано темну тему та автооновлення", date: "2025-04-01T09:00:00", read: false }
+    ];
+
+    function renderMessages() {
+      const list = document.getElementById('messagesList');
+      const noMsg = document.getElementById('noMessages');
+      const unread = messages.filter(m => !m.read).length;
+      const badge = document.getElementById('unreadBadge');
+
+      badge.textContent = unread > 9 ? '9+' : unread;
+      badge.classList.toggle('hidden', unread === 0);
+
+      if (messages.length === 0) {
+        noMsg.classList.remove('hidden');
+        list.innerHTML = '';
+        return;
+      }
+      noMsg.classList.add('hidden');
+
+      list.innerHTML = messages.map(msg => `
+        <div class="message ${!msg.read ? 'unread' : ''}" onclick="openMessage(${msg.id})">
+          <div class="flex justify-between items-start">
+            <div class="flex-1">
+              <h3 class="font-semibold">${msg.title}</h3>
+              <p class="text-gray-600 dark:text-gray-300 mt-1">${msg.body}</p>
+            </div>
+            <span class="text-xs text-gray-500 ml-4">${new Date(msg.date).toLocaleString('uk-UA')}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.openMessage = (id) => {
+      const msg = messages.find(m => m.id === id);
+      if (msg && !msg.read && soundEnabled) notificationSound.play();
+      if (msg) msg.read = true;
+      renderMessages();
+      if (msg) alert(`${msg.title}\n\n${msg.body}\n\n${new Date(msg.date).toLocaleString('uk-UA')}`);
+    };
+
+    window.markAllAsRead = () => {
+      messages.forEach(m => m.read = true);
+      renderMessages();
+    };
+
+    function openNav() {
+      document.getElementById("mySidebar").classList.add('open');
+      document.getElementById("openBtn").style.display = "none";
+    }
+    function closeNav() {
+      document.getElementById("mySidebar").classList.remove('open');
+      document.getElementById("openBtn").style.display = "block";
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('loggedInUser');
+      location.href = '/login.html';
+    });
+
+    loadSettings().then(renderMessages);
+  </script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Авторизація</title>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f4f4f4; }
+        .login-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); width: 300px; }
+        h2 { text-align: center; color: #333; }
+        input[type="email"], input[type="password"] { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 10px; }
+        button:hover { background-color: #0056b3; }
+        p { text-align: center; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Вхід у систему</h2>
+        
+        <form id="loginForm">
+            <input type="email" name="email" placeholder="Електронна пошта" required>
+            <input type="password" name="password" placeholder="Пароль" required>
+            
+            <button type="submit">Увійти</button>
+        </form>
+        
+        <p>Немає облікового запису? <a href="/register.html">Зареєструватися</a></p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('loginForm');
+            
+            if (form) {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault(); 
+                    
+                    const email = form.querySelector('[name="email"]').value;
+                    const password = form.querySelector('[name="password"]').value;
+
+                    try {
+                        const response = await fetch('/api/auth/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email, password })
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            // УСПІХ: Зберігаємо дані користувача
+                            localStorage.setItem('user', JSON.stringify(data.user)); 
+                            alert('Вхід успішний! Перенаправлення...');
+                            window.location.href = '/index.html';
+                        } else {
+                            // ПОМИЛКА АВТОРИЗАЦІЇ (401)
+                            alert(data.error || 'Невірна пошта або пароль.');
+                        }
+                    } catch (error) {
+                        alert('Помилка мережі або сервера. Перевірте підключення.');
+                        console.error('Login error:', error);
+                    }
+                });
+            } else {
+                console.error("Помилка: Елемент з ID 'loginForm' не знайдено!");
+            }
+        });
+    </script>
+</body>
+</html>

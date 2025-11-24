@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Допомога — Система наказів</title>
+
+  <!-- Ті ж стилі, що й на інших сторінках -->
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/help.css" /> <!-- якщо є -->
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 50%, #a5d6a7 100%);
+      min-height: 100vh;
+      background-attachment: fixed;
+    }
+    .help-container {
+      max-width: 1100px;
+      margin: 30px auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      overflow: hidden;
+    }
+    .help-header {
+      background: linear-gradient(120deg, #2e7d32, #4caf50);
+      color: white;
+      padding: 35px 20px;
+      text-align: center;
+    }
+    .help-header h1 {
+      margin: 0;
+      font-size: 2.6em;
+      font-weight: 400;
+      letter-spacing: 1px;
+    }
+    .help-header p {
+      margin: 10px 0 0;
+      opacity: 0.95;
+      font-size: 1.1em;
+    }
+    .help-content {
+      padding: 40px;
+      line-height: 1.8;
+      color: #2e3d2e;
+    }
+    .section {
+      margin-bottom: 40px;
+      padding-bottom: 25px;
+      border-bottom: 1px dashed #c8e6c9;
+    }
+    .section:last-child { border-bottom: none; }
+    .section h2 {
+      color: #2e7d32;
+      font-size: 1.6em;
+      margin: 0 0 15px 0;
+      padding-left: 10px;
+      border-left: 6px solid #81c784;
+    }
+    ul, ol {
+      padding-left: 25px;
+    }
+    li {
+      margin: 8px 0;
+    }
+    code {
+      background: #e8f5e8;
+      padding: 3px 8px;
+      border-radius: 4px;
+      color: #2e7d32;
+      font-weight: bold;
+    }
+    .back-btn {
+      display: inline-block;
+      margin: 30px 0;
+      padding: 14px 40px;
+      background: #2e7d32;
+      color: white;
+      text-decoration: none;
+      border-radius: 50px;
+      font-weight: bold;
+      font-size: 1.1em;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(46,125,50,0.3);
+    }
+    .back-btn:hover {
+      background: #4caf50;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(76,175,80,0.4);
+    }
+    .text-center { text-align: center; }
+  </style>
+</head>
+<body>
+
+  <div class="help-container">
+    <div class="help-header">
+      <h1>Допомога та інструкція</h1>
+      <p>Дізнайтесь, як швидко та зручно працювати з системою</p>
+    </div>
+
+    <div class="help-content">
+
+      <div class="section">
+        <h2>Додавання нового наказу</h2>
+        <ol>
+          <li>Натисніть кнопку <strong>«Додати наказ»</strong></li>
+          <li>Завантажте файл <code>.docx</code> — назва автоматично заповниться</li>
+          <li>Виберіть статус та за потреби термін виконання</li>
+          <li>Натисніть <strong>«Зберегти»</strong></li>
+        </ol>
+      </div>
+
+      <div class="section">
+        <h2>Редагування та видалення</h2>
+        <ul>
+          <li>Клікніть на наказ → відкриється детальна картка</li>
+          <li><strong>Редагувати</strong> — змінити статус, термін або замінити файл</li>
+          <li><strong>Видалити</strong> — з підтвердженням (файл теж видалиться)</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h2>Пошук та фільтри</h2>
+        <ul>
+          <li>Поле пошуку — за назвою наказу</li>
+          <li>Фільтр за статусом — Активні / Виконані / Архів</li>
+          <li>Сортування — налаштовується в розділі <strong>Налаштування</strong></li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h2>Налаштування</h2>
+        <p>Тут можна змінити:</p>
+        <ul>
+          <li>Тему (світла/темна)</li>
+          <li>Кількість наказів на сторінці</li>
+          <li>Сортування за замовчуванням</li>
+          <li>Звук сповіщень та автопоновлення</li>
+        </ul>
+        <p><strong>Усе зберігається автоматично!</strong></p>
+      </div>
+
+      <div class="section">
+        <h2>Профіль</h2>
+        <p>Зміна імені, пошти та паролю</p>
+      </div>
+
+      <div class="section">
+        <h2>Технічні вимоги</h2>
+        <ul>
+          <li>Тільки файли <code>.docx</code></li>
+          <li>Максимальний розмір — 10 МБ</li>
+          <li>Ваші дані захищені</li>
+        </ul>
+      </div>
+
+      <div class="text-center">
+        <a href="/" class="back-btn">На головну</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Підключаємо твої скрипти (якщо є) -->
+  <script src="/js/main.js"></script>
+  <script src="/js/help.js"></script>
+
+</body>
+</html>

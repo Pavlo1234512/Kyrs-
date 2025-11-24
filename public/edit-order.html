@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Профіль користувача</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #f3f4f6;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      background: #2d6a4f;
+      color: white;
+      padding: 1rem 2rem;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .header .title { font-size: 1.3rem; font-weight: 600; }
+    .header .subtitle { font-size: 0.9rem; opacity: 0.9; }
+    .main-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 2rem;
+      transition: margin-left 0.3s;
+    }
+    .content { width: 100%; max-width: 900px; text-align: center; }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+    h1 { 
+      color: #1f2937; 
+      font-size: 2rem; 
+      font-weight: 600; 
+      margin-bottom: 1.5rem; 
+      text-align: center;
+    }
+    .profile-info {
+      text-align: left;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .info-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 1.5rem;
+    }
+    label {
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 0.5rem;
+    }
+    input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 1rem;
+      background: #f9fafb;
+    }
+    input:focus {
+      outline: none;
+      border-color: #16a34a;
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+    }
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 0.95rem;
+      text-decoration: none;
+      display: inline-block;
+      width: 100%;
+      text-align: center;
+    }
+    .btn-success {
+      background: #16a34a;
+      color: white;
+    }
+    .btn-success:hover {
+      background: #15803d;
+    }
+    .btn-secondary {
+      background: #6b7280;
+      color: white;
+      margin-top: 0.5rem;
+    }
+    .btn-secondary:hover {
+      background: #4b5563;
+    }
+    .sidebar {
+      height: 100%;
+      width: 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+      background: #1f2937;
+      padding-top: 70px;
+      transition: 0.3s;
+      overflow-x: hidden;
+      z-index: 1001;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+    .sidebar.open { width: 260px; }
+    .sidebar a, .sidebar button {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1.5rem;
+      color: #e5e7eb;
+      font-weight: 500;
+      text-decoration: none;
+      margin: 0.25rem 1rem;
+      border-radius: 8px;
+      transition: background 0.3s;
+    }
+    .sidebar a i, .sidebar button i { margin-right: 0.75rem; width: 20px; text-align: center; }
+    .sidebar a:hover, .sidebar button:hover { background: #374151; }
+    .closebtn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 36px;
+      height: 36px;
+      background: #dc2626;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: background 0.3s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .closebtn:hover { background: #b91c1c; }
+    .openbtn {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      background: #16a34a;
+      color: white;
+      padding: 0.75rem 1rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      z-index: 1002;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      transition: all 0.3s;
+    }
+    .openbtn:hover { background: #15803d; }
+    #logoutBtn { background: #dc2626; margin: 1rem; width: calc(100% - 2rem); }
+    #logoutBtn:hover { background: #b91c1c; }
+    .footer {
+      background: #2d6a4f;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.875rem;
+      margin-top: auto;
+    }
+    @media (max-width: 768px) {
+      .main-container { padding: 60px 1rem 1rem; }
+      .content { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="title">Система обліку наказів та розпоряджень</div>
+    <div class="subtitle">Військовий інститут телекомунікацій та інформатизації</div>
+  </header>
+
+  <button class="openbtn" id="openBtn" onclick="openNav()">Меню</button>
+
+  <div id="mySidebar" class="sidebar">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">X</a>
+    <div class="px-4 mb-6 text-center">
+      <p id="userName" class="text-white font-semibold">Користувач</p>
+    </div>
+    <a href="/profile.html"><i class="fas fa-user"></i> Профіль</a>
+    <a href="/add-order.html"><i class="fas fa-plus"></i> Додати наказ</a>
+    <a href="/settings.html"><i class="fas fa-cog"></i> Налаштування</a>
+    <a href="/archive.html"><i class="fas fa-archive"></i> Архів</a>
+    <a href="/messages.html"><i class="fas fa-envelope"></i> Повідомлення</a>
+    <a href="/help.html"><i class="fas fa-question-circle"></i> Допомога</a>
+    <button id="logoutBtn" class="w-full text-left"><i class="fas fa-sign-out-alt"></i> Вийти</button>
+  </div>
+
+  <div class="main-container" id="mainContainer">
+    <div class="content">
+      <h1>Профіль користувача</h1>
+
+      <div class="card">
+        <form id="profileForm" class="profile-info">
+          <div class="info-group">
+            <label for="name">Ім'я:</label>
+            <input type="text" id="name" required>
+          </div>
+          <div class="info-group">
+            <label for="email">Електронна пошта:</label>
+            <input type="email" id="email" required>
+          </div>
+          <div class="info-group">
+            <label for="password">Новий пароль (залишіть порожнім, щоб не змінювати):</label>
+            <input type="password" id="password" placeholder="••••••••" autocomplete="new-password">
+          </div>
+          <div class="info-group">
+            <label for="confirmPassword">Підтвердіть новий пароль:</label>
+            <input type="password" id="confirmPassword" placeholder="••••••••" autocomplete="new-password">
+          </div>
+          <button type="submit" class="btn btn-success">Зберегти зміни</button>
+          <a href="/index.html" class="btn btn-secondary">Назад до списку</a>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    © 2025 ВІТІ ім. Героїв Крут. Всі права захищено.
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = JSON.parse(localStorage.getItem('loggedInUser') || '{}');
+      if (!user.id) {
+        alert('Увійдіть у систему!');
+        window.location.href = '/login.html';
+        return;
+      }
+
+      // Заповнення форми
+      document.getElementById('name').value = user.name || '';
+      document.getElementById('email').value = user.email || '';
+      document.getElementById('userName').textContent = user.name || 'Користувач';
+
+      // Вихід
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.removeItem('loggedInUser');
+        window.location.href = '/login.html';
+      });
+
+      // Збереження профілю
+      document.getElementById('profileForm').onsubmit = async (e) => {
+        e.preventDefault();
+
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        if (!name || !email) return alert('Заповніть ім\'я та email');
+        if (password && password !== confirmPassword) return alert('Паролі не співпадають');
+        if (password && password.length < 4) return alert('Пароль має бути не менше 4 символів');
+
+        const updateData = { name, email };
+        if (password) updateData.password = password;
+
+        try {
+          const res = await fetch(`/api/users/${user.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-User-Id': user.id
+            },
+            body: JSON.stringify(updateData)
+          });
+
+          const data = await res.json();
+          if (res.ok) {
+            localStorage.setItem('loggedInUser', JSON.stringify({ ...user, name, email }));
+            document.getElementById('userName').textContent = name;
+            alert('Профіль оновлено! Новий пароль збережений.');
+            document.getElementById('password').value = '';
+            document.getElementById('confirmPassword').value = '';
+          } else {
+            alert(data.error || 'Помилка');
+          }
+        } catch (err) {
+          console.error(err);
+          alert('Сервер не відповідає');
+        }
+      };
+    });
+
+    function openNav() {
+      document.getElementById("mySidebar").classList.add('open');
+      document.getElementById("mainContainer").style.marginLeft = "260px";
+      document.getElementById("openBtn").style.display = "none";
+    }
+
+    function closeNav() {
+      document.getElementById("mySidebar").classList.remove('open');
+      document.getElementById("mainContainer").style.marginLeft = "0";
+      document.getElementById("openBtn").style.display = "block";
+    }
+  </script>
+</body>
+</html>
