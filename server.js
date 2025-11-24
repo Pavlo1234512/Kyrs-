@@ -8,7 +8,7 @@ const bcrypt = require('bcryptjs');
 
 const app = express();
 
-// Порт для Render / будь-якого хостингу
+// Порт для Render і локалки
 const PORT = process.env.PORT || 3000;
 
 // ====================== НАЛАШТУВАННЯ ======================
@@ -20,7 +20,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(express.static('public'));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ====================== АВТОРИЗАЦІЯ ======================
+// ====================== АВТОРИЗАЦІЯ МІДЛВАР ======================
 app.use((req, res, next) => {
   if (req.path.includes('.') || req.path.startsWith('/uploads')) return next();
 
@@ -61,24 +61,35 @@ const upload = multer({
   }
 });
 
-// ====================== MONGO — ПРАВИЛЬНЕ ПІДКЛЮЧЕННЯ ДЛЯ Render ======================
-const mongoose = require('mongoose');
+// === НА САМОМУ ВЕРХУ ФАЙЛУ (після всіх require) ===
+require('dotenv').config();
 
-const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/kyrsach'; // fallback на локалку
+// === ПІДКЛЮЧЕННЯ ДО MONGODB (ФІНАЛЬНА ВЕРСІЯ) ===
+const uri = process.env.MONGODB_URI;
 
-console.log('Спроба підключення до MongoDB...');
-// console.log('URI:', uri.replace(/:([^:@]{1,})@/, ':****@')); // якщо хочеш подивитись (без пароля)
+if (!uri) {
+  if (process.env.RENDER) {
+    console.error('ПОМИЛКА: MONGODB_URI не знайдено на Render!');
+    process.exit(1);
+  } else {
+    console.warn('MONGODB_URI не знайдено → використовую локальну MongoDB');
+    process.env.MONGODB_URI = 'mongodb://127.0.0.1:27017/kyrsach';
+  }
+}
 
-mongoose.connect(uri, {
+console.log('Підключаюсь до MongoDB...');
+
+mongoose.connect(process.env.MONGODB_URI, {
   serverSelectionTimeoutMS: 30000,
   socketTimeoutMS: 45000,
+  maxPoolSize: 10
 })
-.then(() => console.log('MongoDB підключено успішно!'))
-.catch(err => {
-  console.error('Помилка підключення до MongoDB:');
-  console.error(err.message);
-  process.exit(1);
-});
+  .then(() => console.log('MongoDB підключено успішно!'))
+  .catch(err => {
+    console.error('Не вдалося підключитися до MongoDB:');
+    console.error(err.message);
+    process.exit(1);
+  });
 // ====================== МОДЕЛІ ======================
 const User = mongoose.model('User', new mongoose.Schema({
   name: String,
@@ -103,8 +114,7 @@ const Notification = mongoose.model('Notification', new mongoose.Schema({
   read: { type: Boolean, default: false }
 }, { timestamps: true }));
 
-// ====================== ВСІ ТВОЇ РОУТИ — БЕЗ ЗМІН ======================
-// (всі роути залишив точно як у тебе — вони працюють ідеально)
+// ====================== РОУТИ ======================
 
 app.post('/register', async (req, res) => {
   try {
@@ -320,12 +330,12 @@ app.put('/api/notifications/read', async (req, res) => {
   } catch (err) { res.json({ success: false }); }
 });
 
-// ====================== SPA FALLBACK — ПРАЦЮЄ В NODE.JS 22 + RENDER ======================
+// ====================== SPA FALLBACK ======================
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// ====================== ЗАПУСК ======================
+// ====================== ЗАПУСК СЕРВЕРА ======================
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`\nСЕРВЕР ЗАПУЩЕНО на порту ${PORT}`);
   console.log(`http://localhost:${PORT}`);
