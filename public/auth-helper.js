@@ -1,8 +1,8 @@
-// public/auth-helper.js — ОСТАННЯ ВЕРСІЯ (більше ніколи нічого не зламається)
+// public/auth-helper.js — УНІВЕРСАЛЬНА ВЕРСІЯ 2025 (більше нічого не ламай!)
 (() => {
   const saved = localStorage.getItem('currentUser');
   if (!saved) {
-    if (!location.pathname.includes('login.html') && !location.pathname.includes('register.html')) {
+    if (!location.pathname.includes('login.html') && !location.pathname.includes('register.html') && !location.pathname.includes('help.html')) {
       location.href = '/login.html';
     }
     window.user = null;
@@ -17,7 +17,7 @@
     return;
   }
 
-  // Автоматично додаємо authUserId у всі запити
+  // === АВТОМАТИЧНЕ ДОДАВАННЯ authUserId У ЗАПИТИ ===
   const oldFetch = window.fetch;
   window.fetch = (url, options = {}) => {
     if (typeof url === 'string' && url.startsWith('/api/')) {
@@ -27,7 +27,7 @@
     return oldFetch(url, options);
   };
 
-  // Показуємо ім’я в меню НА ВСІХ СТОРІНКАХ
+  // === ПОКАЗ ІМЕНІ КОРИСТУВАЧА НА ВСІХ СТОРІНКАХ ===
   document.addEventListener('DOMContentLoaded', () => {
     const displayName = window.user.name && window.user.name.trim() !== ''
       ? window.user.name
@@ -37,17 +37,21 @@
       el.textContent = displayName;
     });
   });
-  // ЦЕ ТРЕБА ДОДАТИ ОДИН РАЗ — І ВСЕ ПРАЦЮЄ НА ХОСТИНГУ!
-const API_URL = 'https://твій-бекенд-на-railway.up.railway.app';  
-// ← замість цього встав своє справжнє посилання після деплою бекенду
-// наприклад: const API_URL = 'https://nakazy-viti-backend.up.railway.app';
 
-// Тепер усі запити автоматично йдуть на правильний бекенд
-const originalFetch = window.fetch;
-window.fetch = function(url, options = {}) {
-  if (url.startsWith('/api/')) {
-    url = API_URL + url;  // ← магія: /api/auth/login → https://.../api/auth/login
-  }
-  return originalFetch(url, options);
-};
+  // === УНІВЕРСАЛЬНИЙ API_URL — ПРАЦЮЄ ВСЮДИ АВТОМАТИЧНО ===
+  // Якщо фронт і бекенд на одному домені (Render, Vercel тощо) — залишаємо просто '/api/'
+  // Якщо на різних — підставляємо правильний бекенд
+  const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? ''  // локально — запити йдуть на той самий порт[](http://localhost:3000/api/...)
+    : ''; // на Render — теж той самий домен → просто '/api/...' 
+
+  // Перехоплюємо всі fetch-запити
+  const originalFetch = window.fetch;
+  window.fetch = function(url, options = {}) {
+    if (typeof url === 'string' && url.startsWith('/api/')) {
+      url = API_URL + url; // додаємо префікс тільки якщо потрібно
+    }
+    return originalFetch(url, options);
+  };
+
 })();

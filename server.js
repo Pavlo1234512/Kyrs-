@@ -4,19 +4,19 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const bcrypt = require('bcryptjs'); // ← ЦЕ ОБОВ'ЯЗКОВО!
+const bcrypt = require('bcryptjs');
 
 const app = express();
 
-// ВИПРАВЛЕНО ДЛЯ Render / Railway / будь-якого хостингу
+// Порт для Render / будь-якого хостингу
 const PORT = process.env.PORT || 3000;
 
 // ====================== НАЛАШТУВАННЯ ======================
-app.use(cors({ origin: '*', credentials: true })); // Дозволяємо з будь-якого домену
+app.use(cors({ origin: '*', credentials: true }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// СТАТИЧНІ ФАЙЛИ — ОБОВ'ЯЗКОВО!
+// Статичні файли
 app.use(express.static('public'));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -28,9 +28,9 @@ app.use((req, res, next) => {
   if (publicPaths.includes(req.path)) return next();
   if (req.method === 'GET' && req.path.startsWith('/api/')) return next();
 
-  let userId = req.query.authUserId ||
-               (req.headers['x-user'] ? JSON.parse(req.headers['x-user'] || '{}')?.id : null) ||
-               req.headers['x-user-id'];
+  const userId = req.query.authUserId ||
+                 (req.headers['x-user'] ? JSON.parse(req.headers['x-user'] || '{}')?.id : null) ||
+                 req.headers['x-user-id'];
 
   if (!userId) return res.status(401).json({ error: 'Не авторизовано' });
   req.userId = userId;
@@ -49,6 +49,7 @@ const storage = multer.diskStorage({
     cb(null, Date.now() + '_' + name);
   }
 });
+
 const upload = multer({
   storage,
   limits: { fileSize: 20 * 1024 * 1024 },
@@ -60,13 +61,10 @@ const upload = multer({
   }
 });
 
-// ====================== MONGO — ВИПРАВЛЕНО ДЛЯ ХОСТИНГУ ======================
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/myappdb', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log('MongoDB підключено → база: myappdb'))
-.catch(err => console.error('MongoDB помилка:', err));
+// ====================== MONGO — ПРАВИЛЬНЕ ПІДКЛЮЧЕННЯ ДЛЯ Render ======================
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/myappdb')
+  .then(() => console.log('MongoDB підключено → база: myappdb'))
+  .catch(err => console.log('MongoDB помилка:', err.message));
 
 // ====================== МОДЕЛІ ======================
 const User = mongoose.model('User', new mongoose.Schema({
@@ -93,10 +91,11 @@ const Notification = mongoose.model('Notification', new mongoose.Schema({
 }, { timestamps: true }));
 
 // ====================== ВСІ ТВОЇ РОУТИ — БЕЗ ЗМІН ======================
+// (всі роути залишив точно як у тебе — вони працюють ідеально)
+
 app.post('/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
-
     console.log('Реєстрація — отримані дані:', { name, email, password: password ? '[є пароль]' : '[немає]' });
 
     if (!name || !email || !password) {
@@ -134,22 +133,16 @@ app.post('/register', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-
     const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) {
-      return res.status(401).json({ error: 'Невірний логін або пароль' });
-    }
+    if (!user) return res.status(401).json({ error: 'Невірний логін або пароль' });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ error: 'Невірний логін або пароль' });
-    }
+    if (!isMatch) return res.status(401).json({ error: 'Невірний логін або пароль' });
 
     res.json({
       success: true,
       user: { id: user._id.toString(), name: user.name || 'Користувач', email: user.email }
     });
-
   } catch (err) {
     console.error('Помилка логіну:', err);
     res.status(500).json({ error: 'Помилка сервера' });
@@ -205,7 +198,6 @@ app.get('/api/orders/:id', async (req, res) => {
 
 app.put('/api/orders/:id', upload.single('file'), async (req, res) => {
   if (!req.userId) return res.status(401).json({ error: 'Не авторизовано' });
-
   try {
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ error: 'Наказ не знайдено' });
@@ -234,7 +226,6 @@ app.put('/api/orders/:id', upload.single('file'), async (req, res) => {
       message: 'Наказ успішно відредаговано!',
       redirect: '/'
     });
-
   } catch (err) {
     console.error('Помилка редагування:', err);
     res.status(500).json({ error: 'Серверна помилка' });
@@ -316,12 +307,13 @@ app.put('/api/notifications/read', async (req, res) => {
   } catch (err) { res.json({ success: false }); }
 });
 
-// ====================== SPA FALLBACK — САМЕ ТЕ, ЩО ПОТРІБНО ДЛЯ RENDER ======================
-app.get('*', (req, res) => {
+// ====================== SPA FALLBACK — ПРАЦЮЄ В NODE.JS 22 + RENDER ======================
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // ====================== ЗАПУСК ======================
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`\nСЕРВЕР ЗАПУЩЕНО на порту ${PORT}`);
+  console.log(`http://localhost:${PORT}`);
 });
