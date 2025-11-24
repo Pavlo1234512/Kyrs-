@@ -62,10 +62,23 @@ const upload = multer({
 });
 
 // ====================== MONGO — ПРАВИЛЬНЕ ПІДКЛЮЧЕННЯ ДЛЯ Render ======================
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/myappdb')
-  .then(() => console.log('MongoDB підключено → база: myappdb'))
-  .catch(err => console.log('MongoDB помилка:', err.message));
+const mongoose = require('mongoose');
 
+const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/kyrsach'; // fallback на локалку
+
+console.log('Спроба підключення до MongoDB...');
+// console.log('URI:', uri.replace(/:([^:@]{1,})@/, ':****@')); // якщо хочеш подивитись (без пароля)
+
+mongoose.connect(uri, {
+  serverSelectionTimeoutMS: 30000,
+  socketTimeoutMS: 45000,
+})
+.then(() => console.log('MongoDB підключено успішно!'))
+.catch(err => {
+  console.error('Помилка підключення до MongoDB:');
+  console.error(err.message);
+  process.exit(1);
+});
 // ====================== МОДЕЛІ ======================
 const User = mongoose.model('User', new mongoose.Schema({
   name: String,
